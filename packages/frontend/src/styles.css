@@ -1,0 +1,397 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  font-family: var(--font-primary);
+  font-weight: 400;
+  min-height: 100vh;
+}
+
+header {
+  background-color: var(--header-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+header nav {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0;
+}
+
+header nav > * {
+  border-top: 1px solid var(--line-bg);
+  width: 100%;
+  padding: 0.5rem;
+}
+
+h1 {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+a {
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+.logo {
+  max-height: 2em;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+main {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Home Page Styles */
+.add {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: none;
+  padding: 0.5rem 2rem;
+  font-size: 1.25rem;
+  border-radius: 2rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.add:hover {
+  background-color: var(--button-hover-bg);
+  transform: scale(1.05);
+}
+
+.add-logo {
+  max-height: 10em;
+  width: auto;
+  object-fit: contain;
+}
+
+.plant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 75rem;
+  margin: 0 1rem;
+}
+
+/* PlantCard Styles */
+.plant-card-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.plant-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: var(--card-bg);
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 0.2rem solid var(--border-color);
+  margin: 1rem 0;
+}
+
+.plant-card img {
+  width: 8rem;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.plant-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent-text);
+}
+
+.plant-card p {
+  font-size: 1rem;
+  margin: 0.25rem 0;
+  color: var(--accent-text);
+}
+
+.plant-card button {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plant-card button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* AddPlantModal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--form-bg);
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 0.2rem solid var(--line-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 90%;
+  max-width: 30rem;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 90%;
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+  border: none;
+  font-size: 1rem;
+}
+
+.modal-content button {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* Timeline Styles */
+.timeline {
+  padding: 2rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timeline-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 90%;
+  max-width: 30rem;
+  margin-bottom: 2rem;
+}
+
+.timeline-input label {
+  font-size: 0.9rem;
+  color: var(--accent-text);
+  margin-bottom: 0.25rem;
+  align-self: flex-start;
+}
+
+.timeline-input input,
+.timeline-input textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+  border: none;
+  font-size: 1rem;
+}
+
+.timeline-input .error {
+  color: #ff4d4d;
+  font-size: 0.9rem;
+}
+
+.timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  min-height: 12rem;
+  align-items: flex-start;
+}
+
+.timeline-line {
+  position: absolute;
+  width: 0.3rem;
+  height: 90%;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--line-bg);
+  z-index: 1;
+}
+
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-image {
+  width: 10rem;
+  height: 10rem;
+  object-fit: cover;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+}
+
+.timeline-dot {
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--button-bg);
+  border-radius: 50%;
+  border: 0.15rem solid var(--text-color);
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-date {
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  background-color: var(--button-bg);
+  border: 0.15rem solid var(--accent-text);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  color: var(--text-color);
+}
+
+.timeline-notes {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  background-color: var(--card-bg);
+  border: 0.15rem solid var(--accent-text);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  color: var(--accent-text);
+  max-width: 10rem;
+  min-height: 1rem; /* Ensure empty notes are visible */
+}
+
+.timeline-button {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.timeline-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* Desktop Styles */
+@media (min-width: 40em) {
+  header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header nav {
+    flex-direction: row;
+    width: auto;
+    gap: 1rem;
+  }
+
+  header nav > * {
+    border-top: none;
+    width: auto;
+    padding: 0;
+  }
+
+  .plant-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .timeline-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    min-height: 12rem;
+    position: relative;
+    padding-bottom: 2rem;
+  }
+
+  .timeline-line {
+    width: 100%;
+    height: 0.3rem;
+    top: 7rem;
+    left: 0;
+    transform: none;
+    background-color: var(--line-bg);
+  }
+
+  .timeline-container::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 0.3rem;
+    top: calc(7rem + 12rem);
+    left: 0;
+    background-color: var(--line-bg);
+    z-index: 1;
+    display: var(--show-second-line, none);
+  }
+
+  .timeline-container::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 0.3rem;
+    top: calc(7rem + 24rem);
+    left: 0;
+    background-color: var(--line-bg);
+    z-index: 1;
+    display: var(--show-third-line, none);
+  }
+
+  .timeline-image {
+    width: 9rem;
+    height: 9rem;
+  }
+}

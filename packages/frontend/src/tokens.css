@@ -1,0 +1,15 @@
+:root {
+    --primary-bg: #c0dabd;
+    --header-bg: #2e8323;
+    --button-bg: #2e8323;
+    --button-hover-bg: #5caa55;
+    --line-bg: #0e4609;
+    --text-color: #ffffff;
+    --accent-text: #2b2c2b;
+    --card-bg: #d1c5ae;
+    --details-bg: #f0e2b6;
+    --form-bg: #6b9666;
+    --border-color: #9b785b;
+    --font-primary: "Lilita One", sans-serif;
+    --font-secondary: sans-serif;
+  }
