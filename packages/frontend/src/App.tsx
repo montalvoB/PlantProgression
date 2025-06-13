@@ -1,101 +1,236 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, useNavigate } from "react-router";
 import Home from "./Home";
 import Timeline from "./Timeline";
 import { useState, useEffect } from "react";
-import { nanoid } from "nanoid";
 import type { Plant } from "./types";
 import { MainLayout } from "./MainLayout";
-
-const ROSE_URL =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv1t7ZOBF5i3SQBYyFMKm05rpL3Sd3Yny0QA&s";
-const TULIP_URL =
-  "https://www.whiteflowerfarm.com/mas_assets/cache/image/9/4/e/a/38122.Jpg";
-const DAISY_URL =
-  "https://silverfallsseed.com/wp-content/uploads/2016/01/shasta-daisy-tower-2021-22-e1683315437305.jpg";
-
-const initialPlants: Plant[] = [
-  {
-    id: "plant-0",
-    name: "Rose",
-    type: "flower",
-    images: [{ url: ROSE_URL, date: "2025-05-23T00:00:00Z" }],
-    description: "A beautiful rose",
-  },
-  {
-    id: "plant-1",
-    name: "Tulip",
-    type: "flower",
-    images: [{ url: TULIP_URL, date: "2025-05-23T00:00:00Z" }],
-    description: "A bright tulip",
-  },
-  {
-    id: "plant-2",
-    name: "Daisy",
-    type: "flower",
-    images: [{ url: DAISY_URL, date: "2025-05-23T00:00:00Z" }],
-    description: "Nice daisies",
-  },
-];
+import { LoginPage } from "./LoginPage";
+import { ValidRoutes } from "../../backend/src/shared/ValidRoutes";
 
 function App() {
-  const [plants, setPlants] = useState<Plant[]>(initialPlants);
+  const navigate = useNavigate();
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem("token")
+  );
+  const [plants, setPlants] = useState<Plant[]>([]);
+  const [error, setError] = useState("");
+
+  function handleAuthSuccess(newToken: string) {
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+    navigate(ValidRoutes.HOME);
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    setToken(null);
+    navigate(ValidRoutes.LOGIN);
+  }
+
+  if (error) {
+    console.error("Error:", error);
+  }
 
   useEffect(() => {
-    console.log("Plants state updated:", plants);
-  }, [plants]);
+    if (!token) return;
+
+    fetch("/api/plants", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json();
+          if (data.error === "Missing auth token") {
+            logout();
+            return;
+          }
+          throw new Error(data.error || "Failed to fetch plants");
+        }
+        return res.json();
+      })
+      .then((data) =>
+        setPlants(
+          data.map((plant: any) => ({
+            id: plant._id,
+            name: plant.name,
+            type: plant.species,
+            description: plant.description || "",
+            images: [
+              ...(plant.progress?.map((entry: any) => ({
+                id: entry.id, // Map progress ID
+                url: entry.image || "",
+                date: entry.date,
+                notes: entry.notes,
+              })) || []),
+              ...(plant.image
+                ? [
+                    {
+                      url: plant.image,
+                      date: plant.createdAt || new Date(0).toISOString(),
+                      notes: "",
+                    },
+                  ]
+                : []),
+            ],
+          }))
+        )
+      )
+      .catch((err) => console.error("Failed to fetch plants", err));
+  }, [token]);
 
   function addPlant(newPlant: {
     name: string;
-    type: string;
-    image: string;
+    species: string;
+    image: File | null;
     description: string;
   }) {
     if (
       !newPlant.image ||
       !newPlant.name ||
-      !newPlant.type ||
+      !newPlant.species ||
       !newPlant.description
     ) {
-      console.error("All fields are required");
+      setError("All fields are required");
       return;
     }
-    const plantToAdd: Plant = {
-      id: `plant-${nanoid()}`,
-      name: newPlant.name,
-      type: newPlant.type,
-      images: [{ url: newPlant.image, date: new Date().toISOString() }],
-      description: newPlant.description,
-    };
-    setPlants((prev) => [...prev, plantToAdd]);
+
+    const formData = new FormData();
+    formData.append("name", newPlant.name);
+    formData.append("species", newPlant.species);
+    formData.append("description", newPlant.description);
+    if (newPlant.image) {
+      formData.append("image", newPlant.image);
+    }
+
+    fetch("/api/plants", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to add plant");
+        }
+        return res.json();
+      })
+      .then((createdPlant) => {
+        setPlants((prev) => [
+          ...prev,
+          {
+            id: createdPlant._id,
+            name: createdPlant.name,
+            type: createdPlant.species,
+            description: createdPlant.description || "",
+            images: createdPlant.image
+              ? [
+                  {
+                    url: createdPlant.image,
+                    date: new Date(0).toISOString(),
+                    notes: "",
+                  },
+                ]
+              : [],
+          },
+        ]);
+        setError("");
+      })
+      .catch((err) => {
+        setError(err.message);
+        console.error("Failed to add plant", err);
+      });
   }
 
   function deletePlant(id: string) {
-    setPlants((prev) => prev.filter((plant) => plant.id !== id));
+    fetch(`/api/plants/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).then((res) => {
+      if (res.ok) {
+        setPlants((prev) => prev.filter((plant) => plant.id !== id));
+      } else {
+        console.error("Failed to delete plant");
+      }
+    });
   }
 
-  function addPlantImage(plantId: string, imageUrl: string, notes?: string) {
-    if (!imageUrl) {
-      console.error("Image URL is required");
-      return;
-    }
+  function addProgressEntry(
+    plantId: string,
+    entry: { id: string; url: string; date: string; notes?: string }
+  ) {
     setPlants((prev) =>
       prev.map((plant) =>
         plant.id === plantId
           ? {
               ...plant,
-              images: [
-                ...plant.images,
-                { url: imageUrl, date: new Date().toISOString(), notes },
-              ],
+              images: [...plant.images, entry],
             }
           : plant
       )
     );
   }
 
+  function updateProgressNotes(
+    plantId: string,
+    entryId: string,
+    notes: string
+  ) {
+    setPlants((prev) =>
+      prev.map((plant) =>
+        plant.id === plantId
+          ? {
+              ...plant,
+              images: plant.images.map((image) =>
+                image.id === entryId
+                  ? { ...image, notes: notes || undefined }
+                  : image
+              ),
+            }
+          : plant
+      )
+    );
+  }
+
+  if (!token) {
+    return (
+      <Routes>
+        <Route
+          path={ValidRoutes.LOGIN}
+          element={
+            <LoginPage
+              isRegistering={false}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          }
+        />
+        <Route
+          path={ValidRoutes.REGISTER}
+          element={
+            <LoginPage isRegistering={true} onAuthSuccess={handleAuthSuccess} />
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <LoginPage
+              isRegistering={false}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          }
+        />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
+      <Route path={ValidRoutes.HOME} element={<MainLayout logout={logout} />}>
         <Route
           index
           element={
@@ -107,10 +242,23 @@ function App() {
           }
         />
         <Route
-          path="/timeline/:plantId"
-          element={<Timeline plants={plants} addPlantImage={addPlantImage} />}
+          path={ValidRoutes.TIMELINE}
+          element={
+            <Timeline
+              plants={plants}
+              token={token!}
+              addProgressEntry={addProgressEntry}
+              updateProgressNotes={updateProgressNotes}
+            />
+          }
         />
       </Route>
+      <Route
+        path="*"
+        element={
+          <Home plants={plants} addPlant={addPlant} deletePlant={deletePlant} />
+        }
+      />
     </Routes>
   );
 }

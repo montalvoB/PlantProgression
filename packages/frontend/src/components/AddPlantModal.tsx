@@ -5,25 +5,34 @@ type AddPlantModalProps = {
   closeModal: () => void;
   addPlant: (newPlant: {
     name: string;
-    type: string;
-    image: string;
+    species: string; // Changed from type
+    image: File | null;
     description: string;
   }) => void;
 };
 
-function AddPlantModal({ isModalOpen, closeModal, addPlant }: AddPlantModalProps) {
+function AddPlantModal({
+  isModalOpen,
+  closeModal,
+  addPlant,
+}: AddPlantModalProps) {
   const [name, setName] = useState("");
-  const [type, setType] = useState("");
-  const [image, setImage] = useState("");
+  const [species, setSpecies] = useState(""); // Changed from type
+  const [image, setImage] = useState<File | null>(null);
   const [description, setDescription] = useState("");
+  const [error, setError] = useState(""); // Added for error display
 
   const handleSubmit = () => {
-    if (name && type && image && description) {
-      addPlant({ name, type, image, description });
+    if (name && species && image && description) {
+      setError("");
+      addPlant({ name, species, image, description });
       setName("");
-      setType("");
-      setImage("");
+      setSpecies("");
+      setImage(null);
       setDescription("");
+      closeModal();
+    } else {
+      setError("All fields are required");
     }
   };
 
@@ -41,21 +50,21 @@ function AddPlantModal({ isModalOpen, closeModal, addPlant }: AddPlantModalProps
         />
         <input
           type="text"
-          placeholder="Plant Type"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
+          placeholder="Plant Species" // Updated placeholder
+          value={species}
+          onChange={(e) => setSpecies(e.target.value)}
         />
         <input
-          type="text"
-          placeholder="Image URL"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
         />
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+        {error && <p className="error">{error}</p>}
         <button onClick={handleSubmit}>Add Plant</button>
         <button onClick={closeModal}>Cancel</button>
       </div>

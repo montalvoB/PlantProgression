@@ -1,0 +1,45 @@
+### Set token manually (replace with your actual JWT)
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJyYW5kb24iLCJpYXQiOjE3NDk3NzYyMzcsImV4cCI6MTc0OTg2MjYzN30.FqaW6qI5O_gtC35uqoFZPeOUOPpagrkKisUR8kuDUyA
+
+### Login to get JWT token
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "brandon",
+  "password": "password"
+}
+
+### GET all plants (authorized)
+GET http://localhost:3000/api/plants
+Authorization: Bearer {{token}}
+
+### GET all plants with filter by name
+GET http://localhost:3000/api/plants?name=plant
+Authorization: Bearer {{token}}
+
+
+### Add a progress entry to a plant (with optional image)
+PUT http://localhost:3000/api/plants/684b52d43c41f94ce8cb2a3d/progress
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="heightCm"
+
+22.5
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="notes"
+
+Plant has new leaves!
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="plant.jpg"
+Content-Type: image/jpeg
+
+< /c/Users/brand/OneDrive/Documents/CSC-437/PlantProgression/packages/backend/uploads/monstera2.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+### Get plant by ID (to see progress entries)
+GET http://localhost:3000/api/plants/684b52d43c41f94ce8cb2a3d
+Authorization: Bearer {{token}}

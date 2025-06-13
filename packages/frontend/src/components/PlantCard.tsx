@@ -1,3 +1,4 @@
+
 type PlantCardProps = {
   id: string;
   name: string;
@@ -7,7 +8,14 @@ type PlantCardProps = {
   deleteCard: (id: string) => void;
 };
 
-function PlantCard({ id, name, type, image, description, deleteCard }: PlantCardProps) {
+function PlantCard({
+  id,
+  name,
+  type,
+  image,
+  description,
+  deleteCard,
+}: PlantCardProps) {
   return (
     <div className="plant-card">
       <h2>{name}</h2>

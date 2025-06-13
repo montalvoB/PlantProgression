@@ -1,6 +1,7 @@
 export type PlantImage = {
+  id?: string; 
   url: string;
-  date: string; 
+  date: string;
   notes?: string;
 };
 
