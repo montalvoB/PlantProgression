@@ -6,7 +6,6 @@ import {
   handleImageFileErrors,
 } from "../middleware/imageUploadMiddleware";
 import { verifyAuthToken } from "../middleware/verifyAuthToken";
-import { nanoid } from "nanoid";
 
 export function registerPlantRoutes(
   app: express.Application,
@@ -98,6 +97,7 @@ export function registerPlantRoutes(
       }
 
       const image = `/uploads/${file.filename}`;
+      const { nanoid } = await import("nanoid"); // Dynamic import
       const progressId = nanoid();
 
       try {
@@ -115,7 +115,7 @@ export function registerPlantRoutes(
         await plantProvider.addProgressEntry(plantId, {
           id: progressId,
           date: new Date(),
-          heightCm: 0, // Default to 0 since optional
+          heightCm: 0,
           notes,
           image,
         });
@@ -174,7 +174,6 @@ export function registerPlantRoutes(
     }
   );
 
-  // Other routes unchanged
   app.delete(
     "/api/plants/:plantId",
     verifyAuthToken,
