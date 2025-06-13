@@ -2,15 +2,30 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import checker from "vite-plugin-checker";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), checker({ typescript: true })],
   server: {
     proxy: {
-      // Forward all requests from localhost:5173/api/* to localhost:3000/api/*
-      "/api": "http://localhost:3000",
-      "/auth": "http://localhost:3000",
-      "/uploads": "http://localhost:3000",
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy) => {
+          proxy.on("error", (err) => {
+            console.error("Proxy error:", err);
+          });
+        },
+      },
+      "/auth": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/uploads": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

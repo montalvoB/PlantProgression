@@ -1,5 +1,5 @@
 import { useParams } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Plant } from "./types";
 
 type TimelineProps = {
@@ -8,7 +8,7 @@ type TimelineProps = {
   addProgressEntry: (
     plantId: string,
     entry: {
-      id: string; // Added for progress entry ID
+      id: string;
       url: string;
       date: string;
       notes?: string;
@@ -18,7 +18,7 @@ type TimelineProps = {
     plantId: string,
     entryId: string,
     notes: string
-  ) => void; // Added for updating notes
+  ) => void;
 };
 
 function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: TimelineProps) {
@@ -32,54 +32,61 @@ function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: Time
 
   const plant = plants.find((p) => p.id === plantId);
 
-  if (!plant) {
-    console.log("Plant not found for plantId:", plantId);
+  useEffect(() => {
+    console.log("Timeline plantId:", plantId, "Plants:", plants.map(p => ({ id: p.id, name: p.name })));
+    if (!plant) {
+      console.log("Plant not found for plantId:", plantId);
+    } else {
+      console.log("Found plant:", plant.name);
+    }
+  }, [plantId, plants, plant]);
+
+  if (!plant || !plantId) {
+    console.log("Plant or plantId missing:", { plantId, plant });
     return <div>Plant not found</div>;
   }
 
   const handleAddImage = async () => {
     if (!image) {
-      setError("Image is required");
+      setError("Please select an image");
+      console.log("No image selected");
       return;
     }
-
     setError("");
     setIsPending(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("image", image);
-      formData.append("notes", notes);
+    const formData = new FormData();
+    formData.append("image", image);
+    formData.append("notes", notes);
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+    const putUrl = `${API_URL}/plants/${plantId}/progress`;
+    console.log("PUT URL:", putUrl);
 
-      const response = await fetch(`/api/plants/${plantId}/progress`, {
+    try {
+      const response = await fetch(putUrl, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-
       if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || "Failed to add image");
-        setIsPending(false);
-        return;
+        const errorData = await response.json();
+        console.log("PUT error:", errorData);
+        throw new Error(errorData.error || "Failed to upload image");
       }
-
       const data = await response.json();
-      const newEntry = {
-        id: data.id, // Use backend-provided progress ID
-        url: data.image || `/uploads/${image.name}`,
+      console.log("Progress added:", data);
+      addProgressEntry(plantId, {
+        id: data.id,
+        url: data.image,
         date: new Date().toISOString(),
-        notes: notes || undefined,
-      };
-      addProgressEntry(plant.id, newEntry);
+        notes,
+      });
       setImage(null);
       setNotes("");
-      setIsPending(false);
-    } catch (err) {
-      setError("Network error. Please try again later.");
-      console.error("Error uploading image:", err);
+    } catch (error: any) {
+      setError(error.message || "Failed to upload image");
+      console.error("Error uploading image:", error);
+    } finally {
       setIsPending(false);
     }
   };
@@ -108,17 +115,17 @@ function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: Time
       if (!response.ok) {
         const data = await response.json();
         setError(data.error || "Failed to update notes");
-        setIsPending(false);
+        console.log("PATCH error:", data);
         return;
       }
 
       updateProgressNotes(plant.id, editingEntryId, editNotes);
       setEditingEntryId(null);
       setEditNotes("");
-      setIsPending(false);
     } catch (err) {
       setError("Network error. Please try again later.");
       console.error("Error updating notes:", err);
+    } finally {
       setIsPending(false);
     }
   };
@@ -152,7 +159,7 @@ function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: Time
           className="timeline-button"
           onClick={handleAddImage}
           aria-label="Add new plant image"
-          disabled={isPending}
+          disabled={isPending || !image}
         >
           {isPending ? "Uploading..." : "Add Image"}
         </button>
@@ -164,7 +171,7 @@ function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: Time
         ) : (
           plant.images
             .sort(
-              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+              (b, a) => new Date(b.date).getTime() - new Date(a.date).getTime()
             )
             .map((image, index) => (
               <div key={image.id || index} className="timeline-item">
@@ -201,6 +208,7 @@ function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: Time
                         Cancel
                       </button>
                     </div>
+                    {error && <p className="error">{error}</p>}
                   </div>
                 ) : (
                   image.notes &&
@@ -210,7 +218,7 @@ function Timeline({ plants, token, addProgressEntry, updateProgressNotes }: Time
                       {image.id && (
                         <button
                           className="edit-button"
-                          onClick={() => handleEditNotes(image.id!, image.notes)}
+                          onClick={() => handleEditNotes(image.id || "", image.notes)}
                           disabled={isPending}
                           aria-label={`Edit notes for image from ${image.date}`}
                         >

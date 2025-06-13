@@ -6,6 +6,7 @@ import { PlantProvider } from "./PlantProvider";
 import { registerPlantRoutes } from "./routes/registerPlantRoutes";
 import { registerAuthRoutes } from "./routes/authRoutes";
 import { CredentialsProvider } from "./CredentialsProvider";
+import cors from "cors";
 
 dotenv.config();
 
@@ -24,6 +25,12 @@ app.locals.JWT_SECRET = JWT_SECRET;
 app.use(express.json());
 app.use(express.static(STATIC_DIR));
 app.use("/uploads", express.static(IMAGE_UPLOAD_DIR));
+app.use(cors({
+  origin: ["http://localhost:5173", "https://bmonta02.csse.dev"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Authorization", "Content-Type"],
+  credentials: true,
+}));
 
 // Mongo connection
 const mongoClient = connectMongo();
